@@ -9,14 +9,14 @@ Yêu cầu: Python 3.
 ### macOS / Linux / WSL
 
 ```bash
-cd dsa-web-presentation-source/public
+cd DSA-main/public
 python3 -m http.server 8080
 ```
 
 ### Windows PowerShell
 
 ```powershell
-cd dsa-web-presentation-source\public
+cd DSA-main\public
 py -m http.server 8080
 ```
 
@@ -33,7 +33,7 @@ Nhấn `Ctrl + C` trong terminal để dừng máy chủ.
 Yêu cầu: Node.js `22.13.0` trở lên và npm.
 
 ```bash
-cd dsa-web-presentation-source
+cd DSA-main
 npm ci
 npm run dev
 ```
@@ -64,3 +64,14 @@ Chỉ cần tải toàn bộ nội dung thư mục `public/` lên hosting. Trang
 - Có thể dùng nút điều hướng và mục lục trên màn hình.
 
 Lưu ý: font Google sẽ tự chuyển sang font dự phòng nếu máy chạy ngoại tuyến.
+
+## Bản đồng bộ PowerPoint — 13/09/2026
+
+Chạy riêng bộ kiểm thử thuật toán, không cần cài dependency:
+
+```bash
+npm run test:algorithms
+```
+
+Ví dụ mặc định và thuật toán đã đồng bộ với DSA_Dark_Search_Hash_Redesigned.pptx.
+Xem SYNC_REPORT.md để biết thay đổi, kết quả kiểm thử và giới hạn xác minh.

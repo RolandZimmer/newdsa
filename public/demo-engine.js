@@ -16,6 +16,7 @@
     if (kind !== 'linear' && values.some((v, i) => i && v < values[i - 1])) {
       throw new Error('Enter the array in ascending order. Values are not sorted automatically.');
     }
+    if (!['linear', 'binary', 'interpolation'].includes(kind)) throw new Error('Unknown search algorithm.');
     const steps = [];
     let low = 0, high = values.length - 1;
     while (low <= high) {
@@ -34,16 +35,15 @@
     }
     return { steps, message: `${target} was not found. Return -1 (${steps.length} comparison(s)).`, index: -1 };
   }
+  function validateKeys(keys) {
+    for (const key of keys) if (!Number.isSafeInteger(key) || key < 0 || key > 9999) throw new Error('Hash keys must be integers from 0 to 9999.');
+  }
   function hashSearch(keys, size, target) {
+    validateKeys([...keys, target]);
     if (!Number.isInteger(size) || size < 2 || size > 13) throw new Error('Table size must be an integer from 2 to 13.');
-    const slots = Array(size).fill(null);
-    for (const key of keys) {
-      const home = ((key % size) + size) % size;
-      for (let offset = 0; offset < size; offset++) {
-        const pos = (home + offset) % size;
-        if (slots[pos] === key || slots[pos] === null) { slots[pos] = key; break; }
-      }
-    }
+    const built = probing(keys, size);
+    if (built.steps.some(s => s.pos === -1)) throw new Error('Table full: not all keys were inserted. Increase the table size or use fewer keys.');
+    const slots = built.slots;
     const home = ((target % size) + size) % size;
     const steps = [];
     for (let offset = 0; offset < size; offset++) {
@@ -57,6 +57,7 @@
     return { steps, slots, message: `${target} was not found after checking every slot. Return -1 (${steps.length} probe(s)).`, index: -1 };
   }
   function probing(keys, size) {
+    validateKeys(keys);
     if (!Number.isInteger(size) || size < 2 || size > 13) throw new Error('Table size must be an integer from 2 to 13.');
     const slots = Array(size).fill(null), steps = [];
     for (const key of keys) {
@@ -64,10 +65,7 @@
       let placed = false;
       for (let offset = 0; offset < size; offset++) {
         const pos = (home + offset) % size;
-        if (slots[pos] === key) {
-          steps.push({ pos, slots: [...slots], message: `${key} already exists at index ${pos}; duplicate skipped.` });
-          placed = true; break;
-        }
+
         if (slots[pos] === null) {
           slots[pos] = key;
           steps.push({ pos, slots: [...slots], message: `h(${key}) = ${home}. Insert ${key} at index ${pos}.` });
@@ -80,7 +78,8 @@
     return { steps, slots };
   }
   function hashFunction(kind, keys, size) {
-    if (!Number.isInteger(size) || size < 2 || size > 13) throw new Error('Table size must be an integer from 2 to 13.');
+    validateKeys(keys);
+    if (kind === 'midsquare' ? size !== 100 : (!Number.isInteger(size) || size < 2 || size > 13)) throw new Error(kind === 'midsquare' ? 'Mid-square uses 100 buckets, as in the PowerPoint.' : 'Table size must be an integer from 2 to 13.');
     const label = { division: 'division method', midsquare: 'mid-square method', multiplicative: 'multiplicative method' }[kind];
     if (!label) throw new Error('Unknown hash function.');
     const slots = Array(size).fill(null), steps = [];
@@ -91,12 +90,9 @@
         detail = `h(${key}) = ${key} mod ${size} = ${index}`;
       } else if (kind === 'midsquare') {
         const square = key * key;
-        const digits = Math.max(1, String(size - 1).length);
-        const s = String(Math.abs(square)).padStart(digits, '0');
-        const start = Math.floor((s.length - digits) / 2);
-        const mid = s.substring(start, start + digits);
-        index = Number(mid) % size;
-        detail = `${key}² = ${square} → middle ${digits} digit(s) "${mid}" → mod ${size} = ${index}`;
+        const mid = Math.floor(square / 1000) % 100;
+        index = mid;
+        detail = `${key}² = ${String(square).padStart(8, '0')} → fixed middle two digits ${String(mid).padStart(2, '0')} → bucket ${index} of 100`;
       } else {
         const A = (Math.sqrt(5) - 1) / 2;
         const product = key * A;
@@ -115,29 +111,30 @@
     for (let i = 2; i * i <= n; i++) if (n % i === 0) return false;
     return true;
   }
-  function secondaryStep(key, size) {
-    let r = size - 1;
-    while (r > 1 && !isPrime(r)) r -= 1;
-    if (r < 1) r = 1;
-    const step = r - (((key % r) + r) % r);
-    return step === 0 ? r : step;
-  }
+  function secondaryStep(key, size) { return 1 + key % (size - 1); }
   function probeSequence(keys, size, kind) {
+    validateKeys(keys);
     if (!Number.isInteger(size) || size < 2 || size > 13) throw new Error('Table size must be an integer from 2 to 13.');
     if (kind !== 'quadratic' && kind !== 'double') throw new Error('Unknown probing sequence.');
+    if (kind === 'double' && !isPrime(size)) throw new Error('Double hashing needs a prime table size: 2, 3, 5, 7, 11 or 13.');
+    const m = kind === 'quadratic' ? 2 ** Math.ceil(Math.log2(size)) : size;
     const slots = Array(size).fill(null), steps = [];
     for (const key of keys) {
       const home = ((key % size) + size) % size;
       const step2 = kind === 'double' ? secondaryStep(key, size) : null;
       let placed = false;
-      for (let i = 0; i < size; i++) {
+      for (let i = 0; i < m; i++) {
         const pos = kind === 'quadratic'
-          ? (((home + i * i) % size) + size) % size
+          ? (home + i * (i + 1) / 2) % m
           : (((home + i * step2) % size) + size) % size;
         const formula = kind === 'quadratic'
-          ? `h(${key}) = ${home}, i = ${i} → (${home} + ${i}²) mod ${size} = ${pos}`
+          ? `h(${key}) = ${home}, j = ${i} → (${home} + ${i}(${i}+1)/2) mod ${m} = ${pos}`
           : `h1(${key}) = ${home}, h2(${key}) = ${step2}, i = ${i} → (${home} + ${i}·${step2}) mod ${size} = ${pos}`;
-        if (slots[pos] === key) {
+        if (pos >= size) {
+          steps.push({pos: -1, slots: [...slots], message: `${formula}. Outside table size ${size}; skip this gap.`});
+          continue;
+        }
+        if (kind === 'double' && slots[pos] === key) {
           steps.push({ pos, slots: [...slots], message: `${formula}. ${key} already exists here; duplicate skipped.` });
           placed = true; break;
         }
@@ -153,19 +150,17 @@
     return { steps, slots };
   }
   function chaining(keys, size) {
+    validateKeys(keys);
     if (!Number.isInteger(size) || size < 2 || size > 13) throw new Error('Table size must be an integer from 2 to 13.');
     const buckets = Array.from({ length: size }, () => []);
     const steps = [];
     for (const key of keys) {
       const home = ((key % size) + size) % size;
-      const duplicate = buckets[home].includes(key);
-      if (!duplicate) buckets[home].push(key);
+      buckets[home].unshift(key);
       steps.push({
         pos: home,
         buckets: buckets.map(chain => [...chain]),
-        message: duplicate
-          ? `h(${key}) = ${home}. ${key} is already in this bucket; duplicate skipped.`
-          : `h(${key}) = ${home}. Append ${key} to the chain: [${buckets[home].join(' → ')}].`
+        message: `h(${key}) = ${home}. Insert at head: ${key} to the chain: [${buckets[home].join(' → ')}].`
       });
     }
     return { steps, buckets, message: `Inserted ${keys.length} key(s) using separate chaining.` };

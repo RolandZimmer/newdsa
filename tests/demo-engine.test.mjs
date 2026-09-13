@@ -20,9 +20,10 @@ test('invalid and unsorted inputs are rejected', () => {
   for (const kind of ['binary', 'interpolation']) assert.throws(() => d.search(kind, [3, 1], 1));
   assert.deepEqual(d.parseList(' -3, 0  5 '), [-3, 0, 5]);
 });
-test('probing handles negative keys, wraparound, duplicates and full tables', () => {
-  assert.deepEqual(d.probing([-1, 2, 5], 3).slots, [2, 5, -1]);
-  assert.equal(d.probing([1, 1], 3).slots.filter(x => x !== null).length, 1);
+test('probing rejects negative keys and handles wraparound, duplicates and full tables', () => {
+  assert.throws(() => d.probing([-1, 2, 5], 3));
+  assert.deepEqual(d.probing([2, 5, 8], 3).slots, [5, 8, 2]);
+  assert.equal(d.probing([1, 1], 3).slots.filter(x => x !== null).length, 2);
   assert.match(d.probing([1, 2, 3], 2).steps.at(-1).message, /Table full/);
   for (const size of [0, 1, 14, 2.5]) assert.throws(() => d.probing([1], size));
 });
@@ -37,8 +38,8 @@ test('hashSearch builds the table then probes for the target', () => {
   assert.match(emptySlotStop.message, /not found/);
 
   const missingDuplicateKeys = d.hashSearch([1, 1, 1], 3, 1);
-  assert.equal(missingDuplicateKeys.slots.filter(x => x !== null).length, 1);
-  assert.equal(missingDuplicateKeys.index, missingDuplicateKeys.slots.indexOf(1));
+  assert.equal(missingDuplicateKeys.slots.filter(x => x !== null).length, 3);
+  assert.equal(missingDuplicateKeys.index, 1);
 
   for (const size of [0, 1, 14, 2.5]) assert.throws(() => d.hashSearch([1], size, 1));
 });
@@ -47,9 +48,9 @@ test('hashFunction computes division, mid-square and multiplicative addresses', 
   assert.deepEqual(div.steps.map(s => s.pos), [23 % 11, 47 % 11, 8 % 11]);
   assert.match(div.message, /division method/);
 
-  const mid = d.hashFunction('midsquare', [21], 11);
-  assert.equal(mid.steps[0].pos, 0); // 21² = 441 → middle 2 digits "44" → 44 mod 11 = 0
-  assert.ok(mid.steps[0].pos >= 0 && mid.steps[0].pos < 11);
+  const mid = d.hashFunction('midsquare', [1234], 100);
+  assert.equal(mid.steps[0].pos, 22);
+  assert.ok(mid.steps[0].pos >= 0 && mid.steps[0].pos < 100);
 
   const mult = d.hashFunction('multiplicative', [15, 61], 11);
   for (const step of mult.steps) assert.ok(step.pos >= 0 && step.pos < 11);
@@ -67,12 +68,12 @@ test('probeSequence handles quadratic and double hashing without mutating shared
   }
   assert.throws(() => d.probeSequence([1], 5, 'linear'));
 });
-test('chaining groups colliding keys into the same bucket and skips duplicates', () => {
+test('chaining inserts at the head and retains repeated keys', () => {
   const result = d.chaining([12, 23, 34], 11);
-  assert.deepEqual(result.buckets[1], [12, 23, 34]);
+  assert.deepEqual(result.buckets[1], [34, 23, 12]);
   assert.match(result.message, /3 key/);
   const withDuplicate = d.chaining([5, 5], 11);
-  assert.deepEqual(withDuplicate.buckets[5], [5]);
-  assert.match(withDuplicate.steps.at(-1).message, /duplicate skipped/);
+  assert.deepEqual(withDuplicate.buckets[5], [5, 5]);
+  assert.match(withDuplicate.steps.at(-1).message, /Insert at head/);
   for (const size of [0, 1, 14, 2.5]) assert.throws(() => d.chaining([1], size));
 });

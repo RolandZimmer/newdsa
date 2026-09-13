@@ -122,15 +122,15 @@
   const defaults = {
     linear: ['14, 7, 21, 4, 18', '4'],
     binary: ['3, 8, 12, 17, 23, 31, 42', '31'],
-    interpolation: ['10, 20, 30, 40, 50, 60, 70, 80, 90', '70'],
-    probing: ['12, 23, 34', '11'],
-    hashSearch: ['12, 23, 34, 45, 9', '11', '34'],
-    division: ['23, 47, 8, 15', '11'],
-    midsquare: ['21, 3, 44, 7', '11'],
-    multiplicative: ['15, 61, 8, 30', '11'],
-    quadratic: ['12, 23, 34', '11'],
-    double: ['12, 23, 34', '11'],
-    chaining: ['12, 23, 34', '11']
+    interpolation: ['10, 20, 30, 40, 50, 60, 70', '50'],
+    probing: ['12, 22, 32', '10'],
+    hashSearch: ['12, 22, 32', '10', '32'],
+    division: ['26', '10'],
+    midsquare: ['1234', '100'],
+    multiplicative: ['26', '10'],
+    quadratic: ['22, 33, 44', '11'],
+    double: ['22, 33, 44', '11'],
+    chaining: ['15, 25, 35', '10']
   };
 
   function setupDemos() {
@@ -150,12 +150,12 @@
         : `<label class="array-input-label" for="${name}-values">${hash ? 'Keys' : 'Array'} (comma or space separated)
             <input id="${name}-values" name="values" type="text" maxlength="100" autocomplete="off" spellcheck="false" required value="${defaults[name][0]}">
           </label>
-          <label for="${name}-target">${hash ? 'Table size (2–13)' : 'Target'}
+          <label for="${name}-target">${name === 'midsquare' ? 'Table size (fixed: 100)' : hash ? 'Table size (2–13)' : 'Target'}
             <input id="${name}-target" name="target" type="text" inputmode="numeric" maxlength="6" required value="${defaults[name][1]}">
           </label>`;
       const hint = name === 'hashSearch'
         ? 'Up to 12 keys build the table first (silently), then the search probes slot by slot for the target key.'
-        : hash ? 'Up to 12 keys. Negative keys use a non-negative modulo; duplicate keys are skipped.'
+        : hash ? 'Up to 12 keys, from 0 to 9999. ' + (name === 'double' ? 'Prime table size only. Duplicate keys are skipped.' : name === 'midsquare' ? 'Fixed middle two digits; 100 buckets. Only occupied buckets are displayed; other buckets are empty.' : 'Repeated keys are inserted again; direct hashing overwrites collisions.')
           : 'Up to 12 integers, from -9999 to 9999.' + (name === 'linear' ? '' : ' Enter values in ascending order.');
       panel.innerHTML = `<form class="demo-inputs">${fields}
         <button class="replay" type="submit">Run simulation</button>
@@ -206,8 +206,9 @@
 
   function drawValues(panel, values, selected = -1, found = false, low = 0, high = values.length - 1) {
     const array = panel.querySelector('.live-array');
-    array.style.gridTemplateColumns = `repeat(${values.length}, minmax(0, 1fr))`;
-    array.replaceChildren(...values.map((value, i) => {
+    const visible = values.map((value, i) => ({value, i})).filter(({value, i}) => values.length <= 13 || value !== null || i === selected);
+    array.style.gridTemplateColumns = `repeat(${Math.max(1, visible.length)}, minmax(0, 1fr))`;
+    array.replaceChildren(...visible.map(({value, i}) => {
       const cell = document.createElement('div');
       cell.className = 'demo-cell';
       cell.classList.toggle('checking', i === selected && !found);
@@ -338,7 +339,7 @@
         const size = DSADemo.integer(panel.querySelector('[name=target]').value);
         result = DSADemo.probeSequence(keys, size, name);
         initialSlots = Array(size).fill(null);
-        heading.textContent = name === 'quadratic' ? `Quadratic probing · (h + i²) mod ${size}` : `Double hashing · (h1 + i·h2) mod ${size}`;
+        heading.textContent = name === 'quadratic' ? `Quadratic · j(j+1)/2 · size ${size}, m = ${2 ** Math.ceil(Math.log2(size))}` : `Double hashing · (h1 + i·h2) mod ${size}`;
       } else if (name === 'chaining') {
         const keys = DSADemo.parseList(panel.querySelector('[name=values]').value);
         const size = DSADemo.integer(panel.querySelector('[name=target]').value);

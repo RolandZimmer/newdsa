@@ -153,12 +153,11 @@
         </div>
         <div>
           <p class="code-label">C++</p>
-          <pre class="code-block"><code><span class="type">int</span> <span class="fn">linearSearch</span>(<span class="type">int</span> arr[], <span class="type">int</span> n, <span class="type">int</span> x) {
-  <span class="kw">for</span> (<span class="type">int</span> i = 0; i &lt; n; i++) {
-    <span class="kw">if</span> (arr[i] == x)
-      <span class="kw">return</span> i;
-  }
-  <span class="kw">return</span> -1;
+          <pre class="code-block"><code><span class="type">int</span> linear_search(<span class="type">int</span> a[], <span class="type">int</span> n, <span class="type">int</span> val) {
+    <span class="kw">for</span> (<span class="type">int</span> i = <span class="num">0</span>; i &lt; n; i++) {
+        <span class="kw">if</span> (a[i] == val) <span class="kw">return</span> i;
+    }
+    <span class="kw">return</span> -<span class="num">1</span>;
 }</code></pre>
         </div>
       </div>
@@ -241,16 +240,15 @@
         <p class="kicker violet-text">BINARY SEARCH</p>
         <h2>Iterative C++ implementation</h2>
       </header>
-      <pre class="code-block code-wide"><code><span class="type">int</span> <span class="fn">binarySearch</span>(<span class="type">int</span> array[], <span class="type">int</span> n, <span class="type">int</span> target) {
-  <span class="type">int</span> left = 0;
-  <span class="type">int</span> right = n - 1;
-  <span class="kw">while</span> (left &lt;= right) {
-    <span class="type">int</span> mid = left + (right - left) / 2;
-    <span class="kw">if</span> (array[mid] == target) <span class="kw">return</span> mid;
-    <span class="kw">if</span> (array[mid] &lt; target) left = mid + 1;
-    <span class="kw">else</span> right = mid - 1;
-  }
-  <span class="kw">return</span> -1;
+      <pre class="code-block code-wide"><code><span class="type">int</span> binarySearch(<span class="type">int</span> arr[], <span class="type">int</span> n, <span class="type">int</span> x) {
+    <span class="type">int</span> low = <span class="num">0</span>, high = n - <span class="num">1</span>;
+    <span class="kw">while</span> (high &gt;= low) {
+        <span class="type">int</span> mid = low + (high - low) / <span class="num">2</span>;
+        <span class="kw">if</span> (x == arr[mid]) <span class="kw">return</span> mid;
+        <span class="kw">else</span> <span class="kw">if</span> (x &gt; arr[mid]) low = mid + <span class="num">1</span>;
+        <span class="kw">else</span> high = mid - <span class="num">1</span>;
+    }
+    <span class="kw">return</span> -<span class="num">1</span>;
 }</code></pre>
       <div class="code-note"><strong>mid = left + (right - left) / 2</strong><span>avoids overflow compared with (left + right) / 2</span></div>
     </section>
@@ -302,17 +300,17 @@
     <section class="slide" data-title="Interpolation search demo">
       <header class="slide-head compact-head">
         <p class="kicker amber-text">INTERPOLATION SEARCH — LIVE DEMO</p>
-        <h2>Find <span class="amber-text">70</span></h2>
+        <h2>Find <span class="amber-text">50</span></h2>
       </header>
       <div class="demo-panel interpolation-demo" data-demo="interpolation">
         <div class="ruler-array">
           <div class="ruler-ticks" aria-hidden="true"></div>
           <div class="ruler-values">
-            <span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span class="hit">70</span><span>80</span><span>90</span>
+            <span>10</span><span>20</span><span>30</span><span>40</span><span>50</span><span>60</span><span>70</span>
           </div>
-          <div class="probe"><i></i><b>estimated index = 6</b></div>
+          <div class="probe"><i></i><b>estimated index = 4</b></div>
         </div>
-        <p class="demo-status">Uniform spacing lets the first estimate find 70.</p>
+        <p class="demo-status">Uniform spacing lets the first estimate find 50.</p>
         <button class="replay amber-button" type="button" data-replay="interpolation">Run again</button>
       </div>
     </section>
@@ -322,18 +320,19 @@
         <p class="kicker amber-text">INTERPOLATION SEARCH</p>
         <h2>C++ implementation</h2>
       </header>
-      <pre class="code-block code-wide code-smaller"><code><span class="type">int</span> <span class="fn">interpolationSearch</span>(<span class="type">int</span> arr[], <span class="type">int</span> n, <span class="type">int</span> x) {
-  <span class="type">int</span> low = 0, high = n - 1;
-  <span class="kw">while</span> (low &lt;= high &amp;&amp; x &gt;= arr[low] &amp;&amp; x &lt;= arr[high]) {
-    <span class="kw">if</span> (arr[high] == arr[low])
-      <span class="kw">return</span> arr[low] == x ? low : -1;
-    <span class="type">int</span> pos = low + (<span class="type">double</span>)(x - arr[low]) *
-              (high - low) / (arr[high] - arr[low]);
-    <span class="kw">if</span> (arr[pos] == x) <span class="kw">return</span> pos;
-    <span class="kw">if</span> (arr[pos] &lt; x) low = pos + 1;
-    <span class="kw">else</span> high = pos - 1;
-  }
-  <span class="kw">return</span> -1;
+      <pre class="code-block code-wide code-smaller"><code><span class="type">int</span> interpolation_search(<span class="type">int</span> arr[], <span class="type">int</span> n, <span class="type">int</span> x) {
+    <span class="type">int</span> low = <span class="num">0</span>, high = n - <span class="num">1</span>;
+    <span class="kw">while</span> (low &lt;= high &amp;&amp; x &gt;= arr[low]
+                       &amp;&amp; x &lt;= arr[high]) {
+        <span class="kw">if</span> (arr[low] == arr[high])
+            <span class="kw">return</span> arr[low] == x ? low : -<span class="num">1</span>;
+        <span class="type">int</span> pos = low + (1LL * x - arr[low]) *
+            (high - low) / (1LL * arr[high] - arr[low]);
+        <span class="kw">if</span> (arr[pos] == x) <span class="kw">return</span> pos;
+        <span class="kw">else</span> <span class="kw">if</span> (arr[pos] &lt; x) low = pos + <span class="num">1</span>;
+        <span class="kw">else</span> high = pos - <span class="num">1</span>;
+    }
+    <span class="kw">return</span> -<span class="num">1</span>;
 }</code></pre>
     </section>
 
@@ -359,13 +358,13 @@
     <section class="slide" data-title="Hash functions">
       <header class="slide-head">
         <p class="kicker pink-text">HASH FUNCTIONS</p>
-        <h2>Four common ways to create an address</h2>
+        <h2>Three common ways to create an address</h2>
       </header>
       <div class="function-grid">
         <article><span>01</span><h3>Division</h3><code>h(k) = k mod m</code></article>
         <article><span>02</span><h3>Multiplication</h3><code>⌊m · frac(kA)⌋</code></article>
         <article><span>03</span><h3>Mid-square</h3><code>middle(k²)</code></article>
-        <article><span>04</span><h3>Folding method</h3><code>sum(parts)</code></article>
+
       </div>
     </section>
 
@@ -377,8 +376,8 @@
       <div class="division-layout">
         <div class="mega-formula">h(k) = k mod m</div>
         <div class="division-example">
-          <p>With <strong>k = 1246</strong> and <strong>m = 1000</strong></p>
-          <div><span>1246</span><b>mod 1000</b><strong>= 246</strong></div>
+          <p>With <strong>k = 26</strong> and <strong>m = 10</strong></p>
+          <div><span>26</span><b>mod 10</b><strong>= 6</strong></div>
         </div>
         <div class="insight-strip">
           <p>Choose <strong>m</strong> carefully. Powers of the number base can give the rightmost digits too much influence.</p>
@@ -390,7 +389,7 @@
     <section class="slide" data-title="Division method demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">DIVISION METHOD — LIVE DEMO</p>
-        <h2>Division method · m = 11</h2>
+        <h2>Division method · m = 10</h2>
       </header>
       <div class="demo-panel" data-demo="division">
         <div class="demo-array live-array" role="group" aria-label="Hash table"></div>
@@ -404,28 +403,13 @@
         <p class="kicker pink-text">HASH FUNCTIONS</p>
         <h2>Mid-square method</h2>
       </header>
-      <div class="split table-split">
-        <div>
-          <p class="body-large">Square the key, then extract the middle digits.</p>
-          <div class="square-demo"><span>1246²</span><b>015<span>525</span>16</b><strong>h(k) = 525</strong></div>
-          <p class="muted">The middle digits are influenced by all digits of the original key.</p>
-        </div>
-        <table class="data-table">
-          <thead><tr><th>k</th><th>k²</th><th>3-digit h(k)</th></tr></thead>
-          <tbody>
-            <tr><td>5402</td><td>29181604</td><td>181 / 816</td></tr>
-            <tr><td>0367</td><td>00134689</td><td>134 / 346</td></tr>
-            <tr><td>1246</td><td>01552516</td><td>552 / 525</td></tr>
-            <tr><td>2893</td><td>08898289</td><td>898 / 982</td></tr>
-          </tbody>
-        </table>
-      </div>
+      <div class="division-layout"><div class="mega-formula">h(k) = ⌊k² / 1000⌋ mod 100</div><div class="division-example"><p>0 ≤ k ≤ 9999 · fixed 8-digit square</p><div><span>1234² = 01522756</span><strong>Bucket 22 of 100</strong></div></div><p class="muted">Extract the same middle two digits for every key. Supplementary example from the PowerPoint.</p></div>
     </section>
 
     <section class="slide" data-title="Mid-square method demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">MID-SQUARE METHOD — LIVE DEMO</p>
-        <h2>Mid-square method · m = 11</h2>
+        <h2>Mid-square method · 100 buckets</h2>
       </header>
       <div class="demo-panel" data-demo="midsquare">
         <div class="demo-array live-array" role="group" aria-label="Hash table"></div>
@@ -455,7 +439,7 @@
     <section class="slide" data-title="Multiplicative method demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">MULTIPLICATIVE METHOD — LIVE DEMO</p>
-        <h2>Multiplicative method · m = 11</h2>
+        <h2>Multiplicative method · m = 10</h2>
       </header>
       <div class="demo-panel" data-demo="multiplicative">
         <div class="demo-array live-array" role="group" aria-label="Hash table"></div>
@@ -464,26 +448,7 @@
       </div>
     </section>
 
-    <section class="slide" data-title="Folding method">
-      <header class="slide-head compact-head">
-        <p class="kicker pink-text">HASH FUNCTIONS</p>
-        <h2>Folding method</h2>
-      </header>
-      <div class="fold-layout">
-        <div class="fold-key">17 046 329</div>
-        <div class="fold-cards">
-          <article>
-            <h3>Shift folding</h3>
-            <div class="number-stack"><span>329</span><span>046</span><span>017</span><strong>392</strong></div>
-          </article>
-          <article>
-            <h3>Boundary folding</h3>
-            <div class="number-stack"><span>046</span><span>923</span><span>710</span><strong>1679</strong></div>
-          </article>
-        </div>
-        <p class="muted centered">Split the key into equal-length parts, align them or reverse alternating parts, then add them.</p>
-      </div>
-    </section>
+
 
     <section class="slide" data-title="Collision resolution">
       <header class="slide-head">
@@ -510,7 +475,7 @@
     <section class="slide" data-title="Linear probing demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">COLLISION RESOLUTION — LIVE DEMO</p>
-        <h2>Linear probing with <span class="pink-text">h(k) = k mod 11</span></h2>
+        <h2>Linear probing with <span class="pink-text">h(k) = k mod 10</span></h2>
       </header>
       <div class="probing-demo" data-demo="probing">
         <div class="keys-row"><span>12</span><span>23</span><span>34</span><i>all hash to 1</i></div>
@@ -537,7 +502,7 @@
     <section class="slide" data-title="Separate chaining demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">OPEN HASHING — LIVE DEMO</p>
-        <h2>Separate chaining · h(k) = k mod 11</h2>
+        <h2>Separate chaining · h(k) = k mod 10</h2>
       </header>
       <div class="demo-panel" data-demo="chaining">
         <div class="demo-array live-array" role="group" aria-label="Hash table buckets"></div>
@@ -549,7 +514,7 @@
     <section class="slide" data-title="Quadratic probing demo">
       <header class="slide-head compact-head">
         <p class="kicker pink-text">CLOSED HASHING — LIVE DEMO</p>
-        <h2>Quadratic probing · <span class="pink-text">(h + i²) mod 11</span></h2>
+        <h2>Quadratic probing · <span class="pink-text">(h + j(j+1)/2) mod 16; skip indices ≥ 11</span></h2>
       </header>
       <div class="demo-panel" data-demo="quadratic">
         <div class="demo-array live-array" role="group" aria-label="Hash table"></div>
