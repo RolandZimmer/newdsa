@@ -163,6 +163,7 @@
       </form>
       <p class="input-hint">${hint}</p>
       <div class="demo-array live-array" role="group" aria-label="${hash ? 'Hash table' : 'Array values and zero-based indices'}"></div>
+      ${name === 'interpolation' ? '<p class="input-hint interpolation-position" aria-live="polite"><strong>pos = —</strong></p>' : ''}
       <p class="demo-status" aria-live="polite"></p>
       <div class="demo-controls">
         <button class="replay step-back" type="button">⏮ Bước trước</button>
@@ -182,6 +183,8 @@
       panel.querySelector('form').addEventListener('input', () => {
         clearDemoTimers();
         currentDemo = null;
+        const position = panel.querySelector('.interpolation-position strong');
+        if (position) position.textContent = 'pos = — (input changed)';
         panel.querySelector('.demo-status').textContent = 'Input changed. Press Enter or Run simulation to start.';
         updateControls(panel, null);
       });
@@ -253,6 +256,10 @@
 
   function draw(demo, stepIndex) {
     const step = stepIndex >= 0 ? demo.result.steps[stepIndex] : null;
+    const position = demo.panel.querySelector('.interpolation-position strong');
+    if (position) position.textContent = step
+      ? `pos = ${step.pos} · a[pos] = ${demo.values[step.pos]} · low = ${step.low} · high = ${step.high}`
+      : 'pos = — (not calculated yet)';
     if (demo.name === 'chaining') {
       drawBuckets(demo.panel, step ? step.buckets : demo.initialBuckets, step ? step.pos : -1);
       demo.status.textContent = step ? step.message : 'Empty buckets. Insertion starts now…';
@@ -309,6 +316,8 @@
     if (!panel) return;
     const status = panel.querySelector('.demo-status');
     status.classList.remove('input-error');
+    const position = panel.querySelector('.interpolation-position strong');
+    if (position) position.textContent = 'pos = — (not calculated yet)';
     currentDemo = null;
     try {
       const name = panel.dataset.demo;
