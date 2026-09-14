@@ -403,7 +403,7 @@
         <p class="kicker pink-text">HASH FUNCTIONS</p>
         <h2>Mid-square method</h2>
       </header>
-      <div class="division-layout"><div class="mega-formula">h(k) = ⌊k² / 1000⌋ mod 100</div><div class="division-example"><p>0 ≤ k ≤ 9999 · fixed 8-digit square</p><div><span>1234² = 01522756</span><strong>Bucket 22 of 100</strong></div></div><p class="muted">Extract the same middle two digits for every key. Supplementary example from the PowerPoint.</p></div>
+      <div class="division-layout"><div class="mega-formula">h(k) = ⌊k² / 1000⌋ mod 100</div><div class="division-example"><p>0 ≤ k ≤ 9999 · fixed 8-digit square</p><div><span>1234² = 1522756</span><strong>Bucket 22 of 100</strong></div></div><p class="muted">Extract the same middle two digits for every key. Supplementary example from the PowerPoint.</p></div>
     </section>
 
     <section class="slide" data-title="Mid-square method demo">
@@ -427,7 +427,7 @@
         <div class="mega-formula">h(k) = ⌊m · frac(k·A)⌋</div>
         <div class="division-example">
           <p>Knuth's suggested constant: <strong>A = (√5 − 1) / 2 ≈ 0.6180339887</strong></p>
-          <div><span>frac(k·A)</span><b>× m</b><strong>⌊…⌋ = h(k)</strong></div>
+          <div><span>m × frac(k·A)</span><strong>⌊…⌋ = h(k)</strong></div>
         </div>
         <div class="insight-strip">
           <p>Unlike the division method, the table size <strong>m</strong> doesn't need to be prime here — the multiplication step already spreads keys out.</p>
